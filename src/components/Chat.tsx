@@ -46,7 +46,7 @@ export default function Chat({ profile }: Props) {
     if (!file) return;
 
     setLoading(true);
-    setMessages(prev => [...prev, { role: "user", content: `📄 Uploaded resume: ${file.name}` }]);
+    setMessages(prev => [...prev, { role: "user", content: "Uploaded resume: " + file.name }]);
 
     try {
       const text = await extractTextFromFile(file);
@@ -66,7 +66,7 @@ export default function Chat({ profile }: Props) {
       setMessages(prev => [...prev, { role: "agent", content: agentReply }]);
       setResumeUploaded(true);
     } catch {
-      setMessages(prev => [...prev, { role: "agent", content: "Could not read the resume. Try a plain text or PDF file." }]);
+      setMessages(prev => [...prev, { role: "agent", content: "Could not read the resume. Try a plain text file." }]);
     } finally {
       setLoading(false);
     }
@@ -127,13 +127,7 @@ export default function Chat({ profile }: Props) {
       <div className="flex-1 py-6 space-y-6 overflow-y-auto">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-white text-gray-950"
-                  : "bg-gray-900 text-gray-100"
-              }`}
-            >
+            <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-white text-gray-950" : "bg-gray-900 text-gray-100"}`}>
               {msg.content}
             </div>
           </div>
@@ -165,4 +159,34 @@ export default function Chat({ profile }: Props) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={loading}
-            className="text-xs text-gray-400 border
+            className="text-xs text-gray-400 border border-gray-700 rounded-lg px-3 py-2 hover:border-gray-500 transition-colors disabled:opacity-40"
+          >
+            Upload Resume
+          </button>
+          {resumeUploaded && (
+            <span className="text-xs text-gray-500 flex items-center">Resume analyzed</span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder="Tell me where you are right now..."
+            disabled={loading}
+            className="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-600 disabled:opacity-50"
+          />
+          <button
+            onClick={sendMessage}
+            disabled={loading || !input.trim()}
+            className="bg-white text-gray-950 font-semibold rounded-xl px-5 py-3 text-sm hover:bg-gray-100 transition-colors disabled:opacity-40"
+          >
+            Send
+          </button>
+        </div>
+        <p className="text-xs text-gray-600 mt-2 text-center">Press Enter to send</p>
+      </div>
+    </div>
+  );
+}
