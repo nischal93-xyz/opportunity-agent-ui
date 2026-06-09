@@ -41,7 +41,7 @@ export default function Chat({ profile }: Props) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4111/api/agents/OpportunityAgent/generate", {
+      const response = await fetch("https://opportunity-agent-production.up.railway.app/api/agents/OpportunityAgent/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -54,7 +54,7 @@ export default function Chat({ profile }: Props) {
 
       setMessages(prev => [...prev, { role: "agent", content: agentReply }]);
     } catch {
-      setMessages(prev => [...prev, { role: "agent", content: "Could not reach the agent. Make sure your backend is running on port 4111." }]);
+      setMessages(prev => [...prev, { role: "agent", content: "Could not reach the agent. Make sure your backend is running." }]);
     } finally {
       setLoading(false);
     }
