@@ -33,11 +33,18 @@ export default function Chat({ profile }: Props) {
   }, [messages]);
 
   const extractTextFromFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string);
-      reader.onerror = reject;
-      reader.readAsText(file);
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === "string" && result.length > 0) {
+          resolve(result);
+        } else {
+          resolve("Student resume uploaded but could not be parsed. Please describe your background instead.");
+        }
+      };
+      reader.onerror = () => resolve("Could not read file.");
+      reader.readAsText(file, "utf-8");
     });
   };
 
@@ -48,10 +55,10 @@ export default function Chat({ profile }: Props) {
     setLoading(true);
     setMessages(prev => [...prev, { role: "user", content: "Uploaded resume: " + file.name }]);
 
-    try {
-      const text = await extractTextFromFile(file);
-      const userMessage = `My name is ${profile.name}. I am from ${profile.origin} studying ${profile.major} at UToledo. RESUME: ${text}`;
+    const text = await extractTextFromFile(file);
+    const userMessage = `My name is ${profile.name}. I am from ${profile.origin} studying ${profile.major} at UToledo. RESUME: ${text}`;
 
+    try {
       const response = await fetch("/api/agents/OpportunityAgent/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +73,7 @@ export default function Chat({ profile }: Props) {
       setMessages(prev => [...prev, { role: "agent", content: agentReply }]);
       setResumeUploaded(true);
     } catch {
-      setMessages(prev => [...prev, { role: "agent", content: "Could not read the resume. Try a plain text file." }]);
+      setMessages(prev => [...prev, { role: "agent", content: "Could not reach the agent." }]);
     } finally {
       setLoading(false);
     }
